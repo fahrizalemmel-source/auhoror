@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AU Horor Interaktif - kamar bawah kosong</title>
+
+    <!-- Google Fonts: Inter untuk tipografi tajam ala iOS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        ios: {
+                            blue: '#007AFF',
+                            bar: '#F6F6F6',
+                            border: '#D1D1D6',
+                            waBg: '#EFEAE2',
+                            waOut: '#DCF8C6',
+                            waIn: '#FFFFFF',
+                            waText: '#111B21',
+                            waMuted: '#667781',
+                            waCheck: '#34B7F1',
+                            twBlue: '#1D9BF0',
+                            twPink: '#F91880'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ==================== 1. STRUKTUR LAYOUT ANTI-BUG (FLEX COLUMN KETAT) ==================== */
+        :root {
+            --app-height: 100dvh;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background-color: #0b0d10;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        }
+
+        .app-wrapper {
+            width: 100%;
+            height: 100dvh;
+            height: var(--app-height, 100dvh);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: radial-gradient(circle at top, #151922 0%, #0b0d10 75%);
+        }
+
+        .phone-frame {
+            position: relative;
+            width: 100%;
+            max-width: 430px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: #EFEAE2;
+            transition: background-color 1.4s ease, box-shadow 1.4s ease;
+        }
+
+        /* Tampilan Frame Desktop (>= 480px) */
+        @media (min-width: 480px) {
+            .phone-frame {
+                height: 94dvh;
+                max-height: 860px;
+                border-radius: 32px;
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                box-shadow: 0 28px 65px -12px rgba(0, 0, 0, 0.85);
+            }
+        }
+
+        /* Header WhatsApp Sticky di Atas Flex */
+        .wa-header {
+            flex-shrink: 0;
+            width: 100%;
+            z-index: 10;
+            background-color: rgba(246, 246, 246, 0.96);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #D1D1D6;
+            transition: background-color 1.4s ease, border-color 1.4s ease;
+        }
+
+        /* Wrapper Tengah untuk Chat Body & Tombol Melayang Scroll Down */
+        .chat-stage {
+            position: relative;
+            flex: 1 1 0%;
+            min-height: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Area Riwayat Obrolan Scrollable */
+        #chat-body {
+            flex: 1 1 0%;
+            min-height: 0;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            touch-action: pan-y;
+            padding: 12px 12px 24px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* Footer Input Bar WhatsApp Sticky di Bawah Flex */
+        .wa-footer {
+            flex-shrink: 0;
+            width: 100%;
+            z-index: 10;
+            background-color: #F6F6F6;
+            border-top: 1px solid #D1D1D6;
+            transition: background-color 1.4s ease, border-color 1.4s ease;
+        }
+
+        /* ==================== 2. WALLPAPER WHATSAPP LIGHT & HORROR DARK ==================== */
+        .wa-wallpaper {
+            background-color: #EFEAE2;
+            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%239C8E7B' stroke-width='1.1' stroke-opacity='0.11'%3E%3Cpath d='M20 22c4-4 10-4 14 0s4 10 0 14-10 4-14 0-4-10 0-14z'/%3E%3Cpath d='M75 18l10 6-4 11-11-2z'/%3E%3Cpath d='M22 82c6-5 14-5 20 0'/%3E%3Ccircle cx='32' cy='90' r='2'/%3E%3Cpath d='M82 78h16v12H82z'/%3E%3Cpath d='M86 78v-4a4 4 0 018 0v4'/%3E%3Cpath d='M54 50l6 6m0-6l-6 6'/%3E%3Cpath d='M14 54a6 6 0 1012 0 6 6 0 10-12 0'/%3E%3Cpath d='M96 48c3 0 6 3 6 6s-3 6-6 6'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: repeat;
+            transition: background-color 1.4s ease;
+        }
+
+        .horror-mode .wa-wallpaper {
+            background-color: #090B0F;
+            background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23FFFFFF' stroke-width='1' stroke-opacity='0.03'%3E%3Cpath d='M20 22c4-4 10-4 14 0s4 10 0 14-10 4-14 0-4-10 0-14z'/%3E%3Cpath d='M75 18l10 6-4 11-11-2z'/%3E%3Cpath d='M22 82c6-5 14-5 20 0'/%3E%3Cpath d='M82 78h16v12H82z'/%3E%3Cpath d='M54 50l6 6m0-6l-6 6'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* Vignette Merah Tipis Saat Mode Horor Aktif */
+        .horror-vignette {
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+            z-index: 15;
+            box-shadow: inset 0 0 0px rgba(140, 0, 0, 0);
+            transition: box-shadow 1.8s ease;
+        }
+
+        .horror-mode .horror-vignette {
+            box-shadow: inset 0 0 85px rgba(145, 0, 0, 0.48);
+        }
+
+        /* Adaptasi Header & Footer Saat Mode Horor */
+        .horror-mode .wa-header {
+            background-color: rgba(13, 16, 22, 0.96);
+            border-bottom-color: #1E2430;
+        }
+
+        .horror-mode #wa-contact-name {
+            color: #F3F4F6;
+        }
+
+        .horror-mode .header-action-btn {
+            background-color: #171C26;
+            color: #D1D5DB;
+            border-color: #2A3241;
+        }
+
+        .horror-mode .wa-footer {
+            background-color: #0D1016;
+            border-top-color: #1E2430;
+        }
+
+        .horror-mode #wa-input-pill {
+            background-color: #161B24;
+            border-color: #2A3240;
+        }
+
+        .horror-mode #tap-hint-text {
+            color: #9CA3AF;
+        }
+
+        /* ==================== 3. BUBBLE CHAT WHATSAPP iOS ==================== */
+        .bubble-in {
+            position: relative;
+            background: #FFFFFF;
+            color: #111B21;
+            box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08);
+            transition: background-color 1.4s ease, color 1.4s ease;
+        }
+        .bubble-in::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: -5px;
+            width: 11px;
+            height: 13px;
+            background: #FFFFFF;
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+            transition: background-color 1.4s ease;
+        }
+
+        .bubble-out {
+            position: relative;
+            background: #DCF8C6;
+            color: #111B21;
+            box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08);
+            transition: background-color 1.4s ease, color 1.4s ease;
+        }
+        .bubble-out::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: -5px;
+            width: 11px;
+            height: 13px;
+            background: #DCF8C6;
+            clip-path: polygon(0 0, 100% 100%, 0 100%);
+            transition: background-color 1.4s ease;
+        }
+
+        /* Warna Bubble di Mode Horor Malam */
+        .horror-mode .bubble-in {
+            background: #141922;
+            color: #E5E7EB;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+        }
+        .horror-mode .bubble-in::after {
+            background: #141922;
+        }
+
+        .horror-mode .bubble-out {
+            background: #0D2B24;
+            color: #E5E7EB;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+        }
+        .horror-mode .bubble-out::after {
+            background: #0D2B24;
+        }
+
+        .horror-mode .bubble-time {
+            color: #8E9BAE;
+        }
+
+        .horror-mode .quote-box {
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+        .horror-mode .quote-text {
+            color: #9CA3AF;
+        }
+
+        .horror-mode .act-pill {
+            background-color: rgba(20, 25, 34, 0.94);
+            color: #F87171;
+            border-color: rgba(185, 28, 28, 0.4);
+        }
+
+        .horror-mode .typing-pill {
+            background-color: #141922;
+        }
+
+        /* ==================== 4. ANIMASI & OVERLAY ==================== */
+        #chat-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        #chat-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #chat-body::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.25);
+            border-radius: 9999px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        @keyframes bubbleEnter {
+            0% {
+                opacity: 0;
+                transform: translateY(8px) scale(0.97);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .animate-bubble {
+            animation: bubbleEnter 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .dot-typing {
+            animation: dotPulse 1.3s infinite ease-in-out both;
+        }
+        .dot-typing:nth-child(1) { animation-delay: -0.32s; }
+        .dot-typing:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes dotPulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Efek Glitch Babak 4 */
+        @keyframes chromaticGlitch {
+            0% { transform: translate(0, 0); filter: none; }
+            18% {
+                transform: translate(-3px, 1px);
+                filter: drop-shadow(2px 0 0 rgba(255, 0, 60, 0.7)) drop-shadow(-2px 0 0 rgba(0, 230, 255, 0.7));
+            }
+            36% {
+                transform: translate(3px, -1px);
+                filter: drop-shadow(-2px 0 0 rgba(255, 0, 60, 0.7)) drop-shadow(2px 0 0 rgba(0, 230, 255, 0.7));
+            }
+            60% { transform: translate(-2px, 0); filter: invert(0.06); }
+            100% { transform: translate(0, 0); filter: none; }
+        }
+        .glitch-pulse {
+            animation: chromaticGlitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Banner Notifikasi iOS Atas */
+        .ios-banner {
+            transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+        .ios-banner.banner-hidden {
+            transform: translateY(-135%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .ios-banner.banner-visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Kilatan Kamera */
+        @keyframes shutterFlash {
+            0% { opacity: 0.95; }
+            100% { opacity: 0; }
+        }
+        .flash-active {
+            animation: shutterFlash 0.45s ease-out forwards;
+        }
+
+        /* Tombol Melayang Panah Bawah */
+        #scroll-bottom-btn {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        #scroll-bottom-btn.btn-hidden {
+            opacity: 0;
+            transform: translateY(8px) scale(0.9);
+            pointer-events: none;
+        }
+        #scroll-bottom-btn.btn-visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <!-- ==================== FRAME HP UTAMA ==================== -->
+        <div id="phone-container" class="phone-frame">
+
+            <!-- Vignette Merah Tipis Saat Mode Horor -->
+            <div class="horror-vignette"></div>
+
+            <!-- Kilatan Kamera Saat Memotret dari Balik Gorden -->
+            <div id="shutter-flash" class="pointer-events-none absolute inset-0 bg-white opacity-0 z-50"></div>
+
+            <!-- ==================== BANNER NOTIFIKASI iOS (BABAK 4 - JUNA ASLI) ==================== -->
+            <div id="ios-push-banner" onclick="dismissPushBanner()" class="ios-banner banner-hidden absolute top-2.5 left-2.5 right-2.5 z-50 bg-white/95 backdrop-blur-xl rounded-2xl p-3 shadow-2xl border border-gray-200 cursor-pointer">
+                <div class="flex items-start gap-2.5">
+                    <div class="relative shrink-0">
+                        <img id="banner-avatar" src="" alt="Juna" onerror="handleImgError(this, 'juna')" class="w-10 h-10 rounded-xl object-cover border border-gray-200">
+                        <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-xs">
+                            <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771z"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-[12px] font-bold text-gray-900 truncate">+62 812-9402-7718</span>
+                            <span class="text-[10.5px] text-gray-400 shrink-0">sekarang</span>
+                        </div>
+                        <p class="text-[12.5px] text-gray-800 leading-snug mt-0.5">
+                            sori baru ada sinyal di rest area cipularang, paket gue aman kan nay? gue baru nyampe subuh keknya
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 1. HEADER WHATSAPP iOS ==================== -->
+            <header class="wa-header px-2.5 py-2 flex items-center justify-between gap-1.5 select-none">
+                <!-- Kiri: Tombol Back, PP Juna, Nama Kontak & Status -->
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                    <button onclick="nextStep()" class="text-ios-blue p-1 rounded-full hover:bg-black/5 active:opacity-60 transition shrink-0" title="Lanjut Chat">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+
+                    <img id="wa-header-avatar"
+                         src=""
+                         alt="PP Juna"
+                         onerror="handleImgError(this, 'juna')"
+                         onclick="openLightbox(this.src, 'Foto Profil Juna', false)"
+                         class="w-9 h-9 rounded-full object-cover border border-black/15 cursor-zoom-in shrink-0">
+
+                    <div class="flex flex-col min-w-0 ml-1">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <h1 id="wa-contact-name" class="text-[14.5px] font-semibold text-black truncate leading-tight">
+                                +62 812-9402-7718
+                            </h1>
+                        </div>
+                        <p id="wa-contact-sub" class="text-[11px] text-gray-500 truncate leading-tight mt-0.5">
+                            ~juna • online
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Kanan: Tombol Ikon Kecil Ganti Foto, Auto-Play, Suara & Restart -->
+                <div class="flex items-center gap-1 shrink-0">
+                    <!-- Ganti Foto K-Pop -->
+                    <button onclick="openPhotoModal()" class="header-action-btn p-1.5 rounded-lg bg-white/90 hover:bg-gray-100 text-gray-700 border border-gray-300/80 transition" title="Ganti Foto K-Pop">
+                        <svg class="w-4 h-4 text-ios-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </button>
+
+                    <!-- Auto-Play Toggle -->
+                    <button id="btn-auto" onclick="toggleAutoPlay()" class="header-action-btn px-2 py-1.5 rounded-lg bg-white/90 hover:bg-gray-100 text-gray-700 border border-gray-300/80 transition flex items-center gap-1 text-[11px] font-semibold" title="Putar Otomatis">
+                        <span id="auto-dot" class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                        <span id="auto-label">Auto</span>
+                    </button>
+
+                    <!-- Audio Toggle -->
+                    <button onclick="toggleSound()" class="header-action-btn p-1.5 rounded-lg bg-white/90 hover:bg-gray-100 text-gray-700 border border-gray-300/80 transition" title="Suara Efek Horor">
+                        <svg id="icon-sound-on" class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        </svg>
+                        <svg id="icon-sound-off" class="w-4 h-4 text-gray-400 hidden" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                        </svg>
+                    </button>
+
+                    <!-- Restart -->
+                    <button onclick="resetStory()" class="header-action-btn p-1.5 rounded-lg bg-white/90 hover:bg-gray-100 text-gray-700 border border-gray-300/80 transition" title="Ulangi Cerita">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Toast Notifikasi Halus -->
+            <div id="wa-toast" class="hidden absolute top-16 left-1/2 -translate-x-1/2 z-30 bg-gray-900/90 text-white text-[11.5px] font-medium px-3.5 py-1.5 rounded-full shadow-lg backdrop-blur-xs whitespace-nowrap">
+            </div>
+
+            <!-- ==================== 2. AREA OBROLAN WHATSAPP (FLEX 1 SCROLLABLE) ==================== -->
+            <div class="chat-stage">
+                <main id="chat-body" class="wa-wallpaper select-none">
+                    <!-- Bubble chat, pemisah babak, dan foto PAP dirender di sini -->
+                </main>
+
+                <!-- Tombol Melayang Loncat ke Pesan Terbawah (↓) -->
+                <button id="scroll-bottom-btn"
+                        onclick="scrollToLatest(true)"
+                        aria-label="Loncat ke pesan terbawah"
+                        class="btn-hidden absolute bottom-3 right-3 z-20 w-9 h-9 rounded-full bg-white/95 text-gray-700 border border-gray-300 shadow-lg flex items-center justify-center active:scale-90">
+                    <span id="unread-scroll-dot" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Indikator Bubble Mengetik di Bawah Chat -->
+            <div id="typing-indicator" class="hidden px-3.5 pb-2 wa-wallpaper shrink-0">
+                <div class="typing-pill inline-flex items-center gap-1 bg-white px-3 py-2 rounded-2xl shadow-xs">
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full dot-typing"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full dot-typing"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full dot-typing"></span>
+                </div>
+            </div>
+
+            <!-- ==================== 3. PANEL PILIHAN ENDING (BABAK 4) ==================== -->
+            <div id="choice-panel" class="hidden bg-[#0F131A]/95 backdrop-blur-md border-t border-red-900/50 p-3.5 flex flex-col gap-2.5 z-20 shrink-0 shadow-2xl">
+                <div class="flex items-center justify-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-red-500">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                    <span>Tentukan Tindakan Naya</span>
+                </div>
+                <div id="choice-list" class="flex flex-col gap-2">
+                    <!-- Tombol pilihan dirender di sini -->
+                </div>
+            </div>
+
+            <!-- ==================== 4. FOOTER INPUT BAR WHATSAPP iOS ==================== -->
+            <footer id="wa-footer" onclick="nextStep()" class="wa-footer px-2.5 py-2 flex items-center gap-2 cursor-pointer select-none">
+                <!-- Ikon Plus Biru iOS -->
+                <span class="text-ios-blue p-0.5 shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                </span>
+
+                <!-- Kolom Ketik Pil Khas iOS -->
+                <div id="wa-input-pill" class="flex-1 bg-white border border-gray-300/90 rounded-full px-3.5 py-1.5 flex items-center justify-between shadow-2xs min-w-0">
+                    <span id="tap-hint-text" class="text-[13px] text-gray-500 truncate">
+                        Ketuk layar atau bar ini untuk lanjut...
+                    </span>
+                    <!-- Ikon Stiker -->
+                    <svg class="w-5 h-5 text-ios-blue shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+
+                <!-- Ikon Kamera & Mikrofon Biru iOS -->
+                <div class="flex items-center gap-2 text-ios-blue pr-0.5 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                    </svg>
+                </div>
+            </footer>
+
+            <!-- ==================== 5. INTERACTIVE CURTAIN PEEK OVERLAY (BABAK 3) ==================== -->
+            <div id="curtain-overlay" style="display: none;" class="absolute inset-0 z-40 select-none overflow-hidden bg-black flex-col items-center justify-center">
+                <!-- Preview Foto Gerbang Malam di Balik Tirai -->
+                <img id="curtain-bg-preview" src="" alt="Balik Gorden" onerror="handleImgError(this, 'juna')" class="absolute inset-0 w-full h-full object-cover opacity-85">
+
+                <!-- Tirai Gorden Kiri & Kanan -->
+                <div id="curtain-left" class="absolute top-0 bottom-0 left-0 w-1/2 bg-gradient-to-r from-[#06070A] via-[#0E1117] to-[#171C26] border-r border-white/10 shadow-2xl" style="transform: translateX(0%);">
+                    <div class="w-full h-full opacity-35 bg-[repeating-linear-gradient(90deg,transparent,transparent_18px,rgba(0,0,0,0.7)_22px,transparent_28px)]"></div>
+                </div>
+                <div id="curtain-right" class="absolute top-0 bottom-0 right-0 w-1/2 bg-gradient-to-l from-[#06070A] via-[#0E1117] to-[#171C26] border-l border-white/10 shadow-2xl" style="transform: translateX(0%);">
+                    <div class="w-full h-full opacity-35 bg-[repeating-linear-gradient(90deg,transparent,transparent_18px,rgba(0,0,0,0.7)_22px,transparent_28px)]"></div>
+                </div>
+
+                <!-- Area Sentuh & Progress Ring -->
+                <div class="relative z-10 flex flex-col items-center justify-center p-6 text-center cursor-pointer touch-none">
+                    <div class="relative w-24 h-24 flex items-center justify-center">
+                        <svg class="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.2)" stroke-width="6" fill="rgba(0,0,0,0.6)" />
+                            <circle id="curtain-progress-circle" cx="50" cy="50" r="42" stroke="#EF4444" stroke-width="6" stroke-linecap="round" fill="none"
+                                    stroke-dasharray="263.89" stroke-dashoffset="263.89" />
+                        </svg>
+                        <svg class="w-8 h-8 text-white absolute" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </div>
+                    <p class="mt-4 text-[14.5px] font-bold text-white tracking-wide drop-shadow">
+                        Tahan Layar / Tombol untuk Menyibak Gorden
+                    </p>
+                    <p class="mt-1 text-[11.5px] text-gray-300/85 max-w-[260px]">
+                        Tahan terus hingga penuh untuk memotret sosok di bawah lampu pagar
+                    </p>
+                    <span class="mt-3.5 px-4 py-1.5 rounded-full bg-red-600/95 text-white text-[12px] font-bold tracking-wide shadow-lg border border-red-400/40">
+                        Tekan & Tahan di Sini
+                    </span>
+                </div>
+            </div>
+
+            <!-- ==================== 6. OVERLAY TWEET PRIVATE ACCOUNT (BABAK 2) ==================== -->
+            <div id="tweet-overlay" style="display: none;" class="absolute inset-0 bg-white z-50 flex-col">
+                <!-- Header Tweet iOS -->
+                <div class="px-3 py-2.5 border-b border-gray-200 flex items-center justify-between bg-white shrink-0">
+                    <button onclick="closeTweetOverlay()" class="text-ios-twBlue p-1 rounded-full hover:bg-blue-50 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <span class="text-[16px] font-bold text-gray-900">Tweet</span>
+                    <span class="w-7"></span>
+                </div>
+
+                <!-- Konten Tweet Scrollable -->
+                <div class="flex-1 min-h-0 overflow-y-auto px-4 py-3.5">
+                    <!-- Profil Akun Gembok Naya -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <img id="tw-avatar"
+                                 src=""
+                                 alt="PP Naya"
+                                 onerror="handleImgError(this, 'naya')"
+                                 class="w-11 h-11 rounded-full object-cover border border-gray-200">
+                            <div class="flex flex-col leading-tight">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-[15px] font-bold text-gray-900">ini naya</span>
+                                    <svg class="w-3.5 h-3.5 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17 9h-1V7a4 4 0 00-8 0v2H7a2 2 0 00-2 2v8a2 2 0 002 2h10a2 2 0 002-2v-8a2 2 0 00-2-2zm-7-2a2 2 0 114 0v2h-4V7z"/>
+                                    </svg>
+                                </div>
+                                <span class="text-[13px] text-gray-500">@nayabukanaya</span>
+                            </div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
+
+                    <!-- Teks Tweet Utama -->
+                    <p id="tw-main-text" class="mt-3.5 text-[17px] leading-[1.42] text-gray-900 font-normal whitespace-pre-line"></p>
+
+                    <!-- Kotak Quote Tweet -->
+                    <div id="tw-quote-box" class="hidden mt-3 border border-gray-200 rounded-2xl p-3 bg-gray-50/70">
+                        <div class="flex items-center gap-1.5 text-[13px]">
+                            <img id="tw-quote-avatar" src="" alt="Naya" onerror="handleImgError(this, 'naya')" class="w-4 h-4 rounded-full object-cover">
+                            <span class="font-bold text-gray-900">ini naya</span>
+                            <svg class="w-3 h-3 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17 9h-1V7a4 4 0 00-8 0v2H7a2 2 0 00-2 2v8a2 2 0 002 2h10a2 2 0 002-2v-8a2 2 0 00-2-2zm-7-2a2 2 0 114 0v2h-4V7z"/>
+                            </svg>
+                            <span class="text-gray-500 truncate">@nayabukanaya · <span id="tw-quote-age">5m</span></span>
+                        </div>
+                        <p id="tw-quote-text" class="mt-1 text-[13.5px] text-gray-800 leading-snug"></p>
+                    </div>
+
+                    <!-- Timestamp Tweet -->
+                    <div class="mt-3.5 pb-3 border-b border-gray-200 text-[13px] text-gray-500 flex items-center gap-1">
+                        <span id="tw-timestamp">23.22 · 25/11/26</span>
+                        <span>·</span>
+                        <span class="text-ios-twBlue">Twitter for iPhone</span>
+                    </div>
+
+                    <!-- Bar Ikon Interaksi Twitter -->
+                    <div class="py-2.5 border-b border-gray-200 flex items-center justify-around text-gray-500">
+                        <button class="flex items-center gap-1.5 hover:text-ios-twBlue transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </button>
+                        <button class="flex items-center gap-1.5 hover:text-emerald-500 transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </button>
+                        <button onclick="toggleTweetLike()" class="flex items-center gap-1 hover:text-ios-twPink transition">
+                            <svg id="tw-like-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                            <span id="tw-like-count" class="text-[12px] font-medium"></span>
+                        </button>
+                        <button class="flex items-center gap-1.5 hover:text-ios-twBlue transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Reply Thread di Bawah Tweet Utama -->
+                    <div id="tw-reply-section" class="hidden pt-3.5 flex items-start gap-2.5">
+                        <img id="tw-reply-avatar" src="" alt="Naya" onerror="handleImgError(this, 'naya')" class="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1 text-[13.5px] flex-wrap">
+                                <span class="font-bold text-gray-900">ini naya</span>
+                                <svg class="w-3.5 h-3.5 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17 9h-1V7a4 4 0 00-8 0v2H7a2 2 0 00-2 2v8a2 2 0 002 2h10a2 2 0 002-2v-8a2 2 0 00-2-2zm-7-2a2 2 0 114 0v2h-4V7z"/>
+                                </svg>
+                                <span class="text-gray-500">@nayabukanaya · <span id="tw-reply-age">2d</span></span>
+                            </div>
+                            <p class="text-[12.5px] text-gray-500 mt-0.5">
+                                Replying to <span class="text-ios-twBlue">@nayabukanaya</span>
+                            </p>
+                            <p id="tw-reply-text" class="mt-1 text-[15px] text-gray-900 leading-snug"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Tombol Kembali ke Chat WA -->
+                <div class="p-3.5 border-t border-gray-200 bg-gray-50 shrink-0">
+                    <button onclick="closeTweetOverlay()" style="touch-action: manipulation;" class="w-full py-3.5 px-4 rounded-full bg-gray-900 hover:bg-black active:scale-[0.98] text-white text-[14px] font-semibold shadow-md transition flex items-center justify-center gap-2">
+                        <span>Kembali ke Chat WhatsApp</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== 7. LIGHTBOX ZOOM + SLIDER BRIGHTNESS ==================== -->
+            <div id="lightbox-modal" style="display: none;" class="absolute inset-0 bg-black/95 z-50 flex-col justify-between p-4 select-none">
+                <div class="flex items-center justify-between text-white/90 text-xs shrink-0">
+                    <span id="lightbox-caption" class="font-semibold truncate pr-2">Foto Lampiran</span>
+                    <button onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white font-bold flex items-center justify-center shrink-0">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex-1 min-h-0 flex items-center justify-center overflow-hidden my-2" onclick="closeLightbox()">
+                    <img id="lightbox-img" src="" alt="Zoom Foto" onerror="handleImgError(this, 'juna')" class="max-w-full max-h-full rounded-xl object-contain shadow-2xl transition-all duration-150">
+                </div>
+
+                <!-- Slider Naikkan Kecerahan (+Brightness) -->
+                <div id="brightness-controls" class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-3 flex flex-col gap-2 shrink-0">
+                    <div class="flex items-center justify-between text-[11.5px] text-white">
+                        <span class="font-semibold flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            <span>Naikkan Kecerahan (+Brightness)</span>
+                        </span>
+                        <span id="brightness-val-label" class="font-mono font-bold text-amber-300">100%</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <input id="brightness-slider" type="range" min="100" max="320" value="100" oninput="updateLightboxBrightness(this.value)" class="flex-1 accent-amber-400 cursor-pointer">
+                        <button onclick="boostNightVision()" class="px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-gray-950 text-[11px] font-extrabold shrink-0 transition">
+                            Terangin Maksimal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 8. MODAL GANTI FOTO K-POP ==================== -->
+            <div id="photo-modal" style="display: none;" class="absolute inset-0 bg-black/75 backdrop-blur-xs z-50 items-center justify-center p-4">
+                <div class="bg-white w-full max-w-[380px] rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[90%]">
+                    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50 shrink-0">
+                        <div>
+                            <h2 class="text-[14px] font-bold text-gray-900">Ganti Foto K-Pop</h2>
+                            <p class="text-[11px] text-gray-500">PP & PAP 1 Juna otomatis tersinkronisasi</p>
+                        </div>
+                        <button onclick="closePhotoModal()" class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-sm flex items-center justify-center">
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 overflow-y-auto flex flex-col gap-3 text-[12px]">
+                        <!-- Slot 1: PP & PAP 1 Juna -->
+                        <div class="p-2.5 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center gap-2.5">
+                            <img id="prev-junaMedia" src="" alt="Preview Juna" onerror="handleImgError(this, 'juna')" class="w-12 h-12 rounded-full object-cover border border-gray-300 shrink-0">
+                            <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                                <span class="font-bold text-gray-800">1. PP & PAP 1 Juna (Sinkron 100%)</span>
+                                <div class="flex gap-1.5">
+                                    <label class="px-2.5 py-1 rounded-md bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-700 shrink-0">
+                                        Galeri
+                                        <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(event, 'junaMedia')">
+                                    </label>
+                                    <input id="url-junaMedia" type="text" placeholder="Tempel URL foto..." oninput="handleUrlPreview(this.value, 'junaMedia')" class="flex-1 min-w-0 px-2 py-1 rounded-md border border-gray-300 bg-white text-[11px] text-gray-700">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Slot 2: PP Twitter Naya -->
+                        <div class="p-2.5 rounded-xl border border-gray-200 bg-gray-50/70 flex items-center gap-2.5">
+                            <img id="prev-nayaPP" src="" alt="Preview Naya" onerror="handleImgError(this, 'naya')" class="w-12 h-12 rounded-full object-cover border border-gray-300 shrink-0">
+                            <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                                <span class="font-bold text-gray-800">2. PP Twitter Naya (@nayabukanaya)</span>
+                                <div class="flex gap-1.5">
+                                    <label class="px-2.5 py-1 rounded-md bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-700 shrink-0">
+                                        Galeri
+                                        <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(event, 'nayaPP')">
+                                    </label>
+                                    <input id="url-nayaPP" type="text" placeholder="Tempel URL foto..." oninput="handleUrlPreview(this.value, 'nayaPP')" class="flex-1 min-w-0 px-2 py-1 rounded-md border border-gray-300 bg-white text-[11px] text-gray-700">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-4 py-3 border-t border-gray-200 bg-gray-50 flex items-center justify-between gap-2 shrink-0">
+                        <button onclick="resetPhotosToDefault()" class="px-3 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-700 text-[12px] font-semibold transition">
+                            Reset Default
+                        </button>
+                        <button onclick="applyPhotoChanges()" class="flex-1 py-2 rounded-xl bg-ios-blue hover:bg-blue-600 text-white text-[12px] font-bold shadow-sm transition">
+                            Simpan & Terapkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ENGINE & NASKAH AU "kamar bawah kosong" ==================== -->
+    <script>
+        // 1. Sinkronisasi tinggi visualViewport agar keyboard/address bar Android tidak mendorong layout
+        function syncViewportHeight() {
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            document.documentElement.style.setProperty("--app-height", `${vh}px`);
+        }
+        syncViewportHeight();
+        window.addEventListener("resize", syncViewportHeight);
+        window.addEventListener("orientationchange", () => setTimeout(syncViewportHeight, 120));
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", syncViewportHeight);
+        }
+
+        // 2. Ilustrasi SVG Fallback Anti-Broken-Image (Karakter Pria Berambut Pirang Spiky Berkaos Hitam & Naya)
+        const FALLBACK_JUNA_SVG = "data:image/svg+xml," + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+                <defs>
+                    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1E293B"/>
+                        <stop offset="100%" stop-color="#0F172A"/>
+                    </linearGradient>
+                </defs>
+                <rect width="320" height="320" fill="url(#bg)"/>
+                <!-- Kaos Hitam -->
+                <path d="M72 320 C76 245, 118 228, 160 228 C202 228, 244 245, 248 320 Z" fill="#111318" stroke="#2D3340" stroke-width="2"/>
+                <!-- Kalung Rantai Silver -->
+                <path d="M132 232 Q160 256 188 232" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-linecap="round"/>
+                <!-- Leher & Wajah -->
+                <rect x="144" y="192" width="32" height="42" rx="12" fill="#E6C2A5"/>
+                <ellipse cx="160" cy="146" rx="46" ry="54" fill="#F1D1B5"/>
+                <!-- Mata & Alis -->
+                <path d="M132 136 Q143 131 151 136" fill="none" stroke="#5C4428" stroke-width="3" stroke-linecap="round"/>
+                <path d="M169 136 Q178 131 188 136" fill="none" stroke="#5C4428" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="142" cy="146" r="4.5" fill="#1E1B18"/>
+                <path d="M170 146 Q178 141 186 146" fill="none" stroke="#1E1B18" stroke-width="3" stroke-linecap="round"/>
+                <!-- Mulut -->
+                <path d="M149 175 Q160 180 171 175" fill="none" stroke="#B97A68" stroke-width="3" stroke-linecap="round"/>
+                <!-- Rambut Pirang Spiky -->
+                <path d="M112 135 L102 96 L124 108 L134 74 L152 98 L166 68 L180 98 L198 76 L204 108 L222 98 L210 135 C206 105, 118 105, 112 135 Z" fill="#D4B475"/>
+            </svg>
+        `);
+
+        const FALLBACK_NAYA_SVG = "data:image/svg+xml," + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+                <rect width="240" height="240" fill="#FCE7F3"/>
+                <circle cx="120" cy="96" r="42" fill="#F9A8D4"/>
+                <path d="M55 235 C60 175, 180 175, 185 235 Z" fill="#EC4899"/>
+                <circle cx="106" cy="92" r="4" fill="#374151"/>
+                <circle cx="134" cy="92" r="4" fill="#374151"/>
+                <path d="M112 108 Q120 115 128 108" fill="none" stroke="#374151" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+        `);
+
+        function handleImgError(imgEl, type) {
+            imgEl.onerror = null;
+            imgEl.src = type === "naya" ? FALLBACK_NAYA_SVG : FALLBACK_JUNA_SVG;
+        }
+
+        // 3. Generator Foto PAP 2 (Kamera Malam dari Balik Gorden Menghadap Pagar Kosan)
+        function generateCurtainGatePhoto() {
+            const canvas = document.createElement("canvas");
+            canvas.width = 540;
+            canvas.height = 680;
+            const ctx = canvas.getContext("2d");
+
+            // Langit malam & halaman gelap
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, 680);
+            bgGrad.addColorStop(0, "#05070B");
+            bgGrad.addColorStop(0.45, "#0B0F17");
+            bgGrad.addColorStop(1, "#121722");
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 540, 680);
+
+            // Pendar lampu jalanan redup di atas pagar
+            const lampGlow = ctx.createRadialGradient(410, 145, 8, 410, 145, 250);
+            lampGlow.addColorStop(0, "rgba(255, 214, 145, 0.42)");
+            lampGlow.addColorStop(0.35, "rgba(217, 155, 78, 0.14)");
+            lampGlow.addColorStop(1, "rgba(10, 14, 22, 0)");
+            ctx.fillStyle = lampGlow;
+            ctx.fillRect(0, 0, 540, 680);
+
+            // Tiang lampu jalan
+            ctx.fillStyle = "#181C24";
+            ctx.fillRect(418, 130, 8, 360);
+            ctx.beginPath();
+            ctx.ellipse(410, 142, 16, 6, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "#FFE6B3";
+            ctx.fill();
+
+            // Paving halaman kosan (POV menukik dari lantai 2)
+            ctx.fillStyle = "#10141D";
+            ctx.beginPath();
+            ctx.moveTo(60, 320);
+            ctx.lineTo(480, 320);
+            ctx.lineTo(540, 680);
+            ctx.lineTo(0, 680);
+            ctx.closePath();
+            ctx.fill();
+
+            // Pilar & Jeruji Pagar Besi Kosan
+            ctx.fillStyle = "#171C26";
+            ctx.fillRect(55, 245, 110, 175);
+            ctx.fillRect(375, 245, 110, 175);
+
+            ctx.strokeStyle = "#1E2533";
+            ctx.lineWidth = 5;
+            for (let x = 175; x <= 365; x += 19) {
+                ctx.beginPath();
+                ctx.moveTo(x, 255);
+                ctx.lineTo(x, 420);
+                ctx.stroke();
+            }
+            ctx.fillStyle = "#1B212E";
+            ctx.fillRect(165, 265, 210, 8);
+            ctx.fillRect(165, 405, 210, 10);
+
+            // SOSOK BERKAOS HITAM & RAMBUT PIRANG SPIKY BERDIRI MEMATUNG MENATAP KE ATAS
+            const figX = 272;
+            const figY = 395;
+
+            // Bayangan di paving
+            ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+            ctx.beginPath();
+            ctx.ellipse(figX - 12, figY + 128, 36, 12, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Celana gelap
+            ctx.fillStyle = "#0B0D12";
+            ctx.fillRect(figX - 18, figY + 56, 15, 72);
+            ctx.fillRect(figX + 3, figY + 56, 15, 72);
+
+            // Kaos Hitam
+            ctx.fillStyle = "#12151C";
+            ctx.beginPath();
+            ctx.moveTo(figX - 28, figY + 4);
+            ctx.lineTo(figX + 28, figY + 4);
+            ctx.lineTo(figX + 23, figY + 60);
+            ctx.lineTo(figX - 23, figY + 60);
+            ctx.closePath();
+            ctx.fill();
+
+            // Rim light tipis lampu jalan di bahu kaos
+            ctx.strokeStyle = "rgba(255, 215, 150, 0.24)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(figX + 12, figY + 4);
+            ctx.lineTo(figX + 28, figY + 6);
+            ctx.lineTo(figX + 24, figY + 56);
+            ctx.stroke();
+
+            // Leher & Wajah dongak lurus menatap jendela kamar 204
+            ctx.fillStyle = "#4A3F39";
+            ctx.fillRect(figX - 6, figY - 8, 12, 13);
+
+            ctx.fillStyle = "#5C4E46";
+            ctx.beginPath();
+            ctx.ellipse(figX, figY - 19, 13, 15, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mata menatap lurus ke arah kamera
+            ctx.fillStyle = "#111318";
+            ctx.beginPath();
+            ctx.arc(figX - 4.5, figY - 22, 2.0, 0, Math.PI * 2);
+            ctx.arc(figX + 4.5, figY - 22, 2.0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Senyum lebar tidak wajar (terungkap jelas saat Brightness dinaikkan di Lightbox)
+            ctx.strokeStyle = "#140E0E";
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(figX, figY - 16, 7.6, 0.12 * Math.PI, 0.88 * Math.PI);
+            ctx.stroke();
+
+            ctx.fillStyle = "rgba(225, 218, 206, 0.52)";
+            ctx.beginPath();
+            ctx.arc(figX, figY - 15.5, 6.0, 0.15 * Math.PI, 0.85 * Math.PI);
+            ctx.fill();
+
+            // Rambut Pirang Spiky
+            ctx.fillStyle = "#877149";
+            ctx.beginPath();
+            ctx.moveTo(figX - 15, figY - 23);
+            ctx.lineTo(figX - 18, figY - 36);
+            ctx.lineTo(figX - 9, figY - 32);
+            ctx.lineTo(figX - 4, figY - 41);
+            ctx.lineTo(figX + 2, figY - 33);
+            ctx.lineTo(figX + 10, figY - 40);
+            ctx.lineTo(figX + 16, figY - 32);
+            ctx.lineTo(figX + 15, figY - 22);
+            ctx.closePath();
+            ctx.fill();
+
+            // Kusen & Lipatan Gorden Kamar di Kiri-Kanan Frame
+            ctx.fillStyle = "#08090D";
+            ctx.fillRect(0, 625, 540, 55);
+
+            const leftCurtain = ctx.createLinearGradient(0, 0, 125, 0);
+            leftCurtain.addColorStop(0, "#040507");
+            leftCurtain.addColorStop(0.55, "#0B0D13");
+            leftCurtain.addColorStop(0.85, "rgba(14, 17, 24, 0.88)");
+            leftCurtain.addColorStop(1, "rgba(14, 17, 24, 0)");
+            ctx.fillStyle = leftCurtain;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(118, 0);
+            ctx.quadraticCurveTo(92, 340, 126, 680);
+            ctx.lineTo(0, 680);
+            ctx.closePath();
+            ctx.fill();
+
+            const rightCurtain = ctx.createLinearGradient(540, 0, 415, 0);
+            rightCurtain.addColorStop(0, "#040507");
+            rightCurtain.addColorStop(0.55, "#0B0D13");
+            rightCurtain.addColorStop(0.85, "rgba(14, 17, 24, 0.88)");
+            rightCurtain.addColorStop(1, "rgba(14, 17, 24, 0)");
+            ctx.fillStyle = rightCurtain;
+            ctx.beginPath();
+            ctx.moveTo(540, 0);
+            ctx.lineTo(422, 0);
+            ctx.quadraticCurveTo(448, 340, 414, 680);
+            ctx.lineTo(540, 680);
+            ctx.closePath();
+            ctx.fill();
+
+            // Grain kamera malam realistis
+            const imgData = ctx.getImageData(0, 0, 540, 680);
+            const data = imgData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const grain = (Math.random() - 0.5) * 18;
+                data[i] = Math.min(255, Math.max(0, data[i] + grain));
+                data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + grain));
+                data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + grain));
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            return canvas.toDataURL("image/jpeg", 0.9);
+        }
+
+        // 4. Konfigurasi Foto Karakter (100% Konsisten antara PP Juna & PAP 1)
+        const JUNA_IDOL_PHOTO = "https://i.pinimg.com/736x/15/dc/c4/15dcc46864b7acca8a84b376e5b6d924.jpg";
+        const NAYA_IDOL_PHOTO = "https://i.pinimg.com/736x/f0/f7/7f/f0f77fda03066708c22678014550847b.jpg";
+
+        let DEFAULT_MEDIA = {
+            junaMedia: JUNA_IDOL_PHOTO,
+            nayaPP: NAYA_IDOL_PHOTO,
+            nayaPapGorden: ""
+        };
+
+        let MEDIA_CONFIG = { ...DEFAULT_MEDIA };
+        let tempMediaBuffer = { ...DEFAULT_MEDIA };
+
+        /**
+         * =========================================================================
+         * NASKAH LENGKAP AU HOROR 4 BABAK: "kamar bawah kosong"
+         * =========================================================================
+         */
+        const STORY_SCRIPT = {
+            main: [
+                {
+                    type: "system",
+                    text: "🔒 Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them."
+                },
+
+                // ==================== BABAK 1 (23.14 - PAKET DI DEPAN PAGAR) ====================
+                { type: "act", text: "23.14 • Paket di Depan Pagar" },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "p",
+                    time: "23.14",
+                    typingMs: 500
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "nay, naya kamar 204 kan?",
+                    time: "23.14",
+                    typingMs: 750
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "tolongin dong masukin paket cod gue di depan pagar, gue juna anak baru kamar 102 bawah. ini masih kejebak macet di tol dari bandung",
+                    time: "23.14",
+                    typingMs: 1100
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "siapa nih??",
+                    time: "23.15"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "jangan-jangan lu kurir nyasar ya",
+                    time: "23.15"
+                },
+                {
+                    type: "image",
+                    sender: "dia",
+                    mediaKey: "junaMedia",
+                    caption: "bukan kurir kocak, nih muka gue. kemaren sore gue baru mindahin koper ke kamar 102",
+                    time: "23.16",
+                    typingMs: 1150
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "save back sekalian biar enak, udah lunas kok paketnya tinggal masukin ke rak sepatu bawah aja",
+                    time: "23.16",
+                    typingMs: 850
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "ohh oke bentar gue turun, udah gue save",
+                    time: "23.17"
+                },
+                {
+                    type: "save_contact",
+                    newName: "juna 102",
+                    newSub: "online",
+                    toastText: "Kontak disimpan sebagai juna 102"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "udah ya, kardusnya udah gue taro rak bawah. pagarnya sekalian gue kunci nih",
+                    time: "23.20"
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "mantap, makasih banyak nay. naik ke kamar sana udah malem",
+                    time: "23.21",
+                    typingMs: 850
+                },
+
+                // ==================== BABAK 2 (23.22 - TWEET PRIVATE ACCOUNT) ====================
+                {
+                    type: "tweet",
+                    mainText: "anak baru kamar bawah 102 sok akrab bgt tiba2 minta tolong masukin paket 😭 tp pas ngirim pap cakep bgt anjir kek karakter anime",
+                    timestamp: "23.22 · 25/11/26",
+                    quoteTweet: {
+                        age: "4m",
+                        text: "mana rambutnya pirang spiky kaos item persis bgt sm foto profilnya"
+                    },
+                    reply: {
+                        age: "1m",
+                        text: "tp td pas gue turun ke bawah kok lampu kamar 102 gelap gulita ya, oh iya kan orangnya masih macet di tol"
+                    }
+                },
+
+                // ==================== BABAK 3 (00.41 - SOSOK DI BALIK GORDEN) ====================
+                {
+                    type: "horror_shift",
+                    actText: "00.41 • Sosok di Balik Gorden"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "jun lu udah sampe kosan?",
+                    time: "00.41"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "barusan gue kebangun denger suara pager depan berdecit",
+                    time: "00.41"
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "belum nay, paling angin. tidur lagi aja",
+                    time: "00.42",
+                    typingMs: 900
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "tapi dari balik gorden jendela kamar gue keliatan ada orang berdiri mematung di bawah lampu pagar",
+                    time: "00.42"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "kaosnya item rambutnya pirang persis lu, lagi dongak natap lurus ke jendela kamar gue di lantai 2???",
+                    time: "00.43"
+                },
+
+                // Mekanik Interaktif: Tahan Layar / Tombol untuk Menyibak Gorden
+                {
+                    type: "curtain_peek"
+                },
+
+                // PAP 2 otomatis terkirim setelah menyibak gorden
+                {
+                    type: "image",
+                    sender: "aku",
+                    mediaKey: "nayaPapGorden",
+                    caption: "JUN INI BENERAN BUKAN LU?!",
+                    time: "00.43",
+                    inspectHint: true
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "klik fotonya terus naikin kecerahannya (+Brightness)... dia senyum lebar banget ke arah kamera gue anjir",
+                    time: "00.44",
+                    glitch: true,
+                    vibrate: true
+                },
+
+                // ==================== BABAK 4 (00.45 - KAMAR BAWAH KOSONG) ====================
+                { type: "act", text: "00.45 • Kamar Bawah Kosong" },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "nay",
+                    time: "00.45",
+                    typingMs: 1650,
+                    erraticTyping: true
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "bukain pintu kamar lu sekarang, kamar 102 dikunci dari luar gue gak bisa masuk.",
+                    time: "00.45",
+                    typingMs: 1550,
+                    erraticTyping: true,
+                    glitch: true
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "bentar...",
+                    time: "00.45"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "kata bu kos kemarin kamar 102 udah kosong dan digembok 6 bulan lalu?!",
+                    time: "00.46",
+                    vibrate: true
+                },
+
+                // Banner Notifikasi iOS Asli di Atas Layar
+                {
+                    type: "push_banner"
+                },
+
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "HAHHH?? ITU BARUSAN NOTIF DARI NOMOR LU YANG SAMA?!",
+                    time: "00.46",
+                    glitch: true,
+                    vibrate: true
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "jangan baca notif itu nay. gue udah di depan pintu kamar 204. buka pintunya.",
+                    time: "00.47",
+                    typingMs: 1700,
+                    erraticTyping: true,
+                    glitch: true,
+                    vibrate: true
+                },
+
+                // 2 Pilihan Ending Mencekam
+                {
+                    type: "choice",
+                    options: [
+                        {
+                            label: "Kunci pintu & sembunyi di lemari",
+                            branch: "ending_lemari"
+                        },
+                        {
+                            label: "Intip lubang kunci pintu kamar",
+                            branch: "ending_intip"
+                        }
+                    ]
+                }
+            ],
+
+            // ==================== ENDING 1: KUNCI PINTU & SEMBUNYI DI LEMARI ====================
+            ending_lemari: [
+                {
+                    type: "system",
+                    text: "🔒 Naya memutar kunci ganda pintu kamar 204 dan masuk bersembunyi ke dalam lemari pakaian"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "gue udah nelpon bu kos sama satpam komplek, pergi lu dari depan pintu gue!!",
+                    time: "00.47"
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "pintu lemarinya gak ada kuncinya kan nay?",
+                    time: "00.48",
+                    typingMs: 1400,
+                    glitch: true,
+                    vibrate: true,
+                    knockSound: true
+                },
+                {
+                    type: "system",
+                    text: "🔊 KREK... Suara pintu kayu lemari di hadapan Naya mulai ditarik perlahan dari luar"
+                },
+                {
+                    type: "end",
+                    badge: "ENDING 1 / 2 • LEMARI KAMAR 204",
+                    title: "kamar bawah kosong",
+                    summary: "Saat Juna asli tiba menjelang subuh bersama Ibu Kos, pintu kamar 204 ditemukan terkunci dari dalam dan kosong. Satu-satunya jejak yang tersisa hanyalah layar HP Naya yang masih menyala di dalam lemari pakaian."
+                }
+            ],
+
+            // ==================== ENDING 2: INTIP LUBANG KUNCI PINTU KAMAR ====================
+            ending_intip: [
+                {
+                    type: "system",
+                    text: "👁️ Naya menahan napas dan mendekatkan matanya ke lubang kunci pintu kamar 204"
+                },
+                {
+                    type: "chat",
+                    sender: "aku",
+                    text: "lorong lantai 2 gelap banget... gak ada siapa-siapa di depan pintu?",
+                    time: "00.47"
+                },
+                {
+                    type: "chat",
+                    sender: "dia",
+                    text: "karena gue dari tadi gak di lorong nay. lihat ke arah jendela.",
+                    time: "00.48",
+                    typingMs: 1450,
+                    erraticTyping: true,
+                    glitch: true,
+                    vibrate: true,
+                    knockSound: true
+                },
+                {
+                    type: "system",
+                    text: "🔊 TOK... TOK... TOK... Tiga ketukan berat terdengar tepat dari kaca jendela lantai 2 di belakang punggung Naya"
+                },
+                {
+                    type: "end",
+                    badge: "ENDING 2 / 2 • KACA LANTAI 2",
+                    title: "kamar bawah kosong",
+                    summary: "Kamar 102 di lantai bawah memang sudah kosong selama enam bulan. Penghuni sebelumnya pergi tanpa pamit setelah mengaku selalu didatangi sosok berwajah familier setiap lewat tengah malam."
+                }
+            ]
+        };
+
+        // =========================================================================
+        // ENGINE UTAMA & KONTROL STATE
+        // =========================================================================
+        let currentBranch = "main";
+        let stepIndex = 0;
+        let isBusy = false;
+        let isAutoPlay = false;
+        let soundEnabled = true;
+        let contactSaved = false;
+        let horrorModeActive = false;
+        let autoTimer = null;
+        let tweetLiked = false;
+
+        const phoneContainer = document.getElementById("phone-container");
+        const chatBody = document.getElementById("chat-body");
+        const scrollBottomBtn = document.getElementById("scroll-bottom-btn");
+        const unreadScrollDot = document.getElementById("unread-scroll-dot");
+        const waHeaderAvatar = document.getElementById("wa-header-avatar");
+        const waContactName = document.getElementById("wa-contact-name");
+        const waContactSub = document.getElementById("wa-contact-sub");
+        const typingIndicator = document.getElementById("typing-indicator");
+        const tapHintText = document.getElementById("tap-hint-text");
+        const choicePanel = document.getElementById("choice-panel");
+        const choiceList = document.getElementById("choice-list");
+        const waFooter = document.getElementById("wa-footer");
+        const tweetOverlay = document.getElementById("tweet-overlay");
+
+        // =========================================================================
+        // WEB AUDIO API HORROR SYNTHESIZER
+        // =========================================================================
+        let audioCtx = null;
+        let droneOsc = null;
+        let droneGain = null;
+
+        function ensureAudioContext() {
+            if (!soundEnabled) return null;
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === "suspended") {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function startAmbientDrone() {
+            if (!soundEnabled) return;
+            const ctx = ensureAudioContext();
+            if (!ctx || droneOsc) return;
+
+            droneOsc = ctx.createOscillator();
+            droneGain = ctx.createGain();
+            droneOsc.type = "sawtooth";
+            droneOsc.frequency.setValueAtTime(48, ctx.currentTime);
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(110, ctx.currentTime);
+
+            droneGain.gain.setValueAtTime(0.001, ctx.currentTime);
+            droneGain.gain.exponentialRampToValueAtTime(0.042, ctx.currentTime + 2.0);
+
+            droneOsc.connect(filter);
+            filter.connect(droneGain);
+            droneGain.connect(ctx.destination);
+            droneOsc.start();
+        }
+
+        function stopAmbientDrone() {
+            if (droneOsc && audioCtx) {
+                try {
+                    droneOsc.stop();
+                    droneOsc.disconnect();
+                } catch (e) {}
+            }
+            droneOsc = null;
+            droneGain = null;
+        }
+
+        function playHeartbeat(intensity = 1) {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            [0, 0.16].forEach((offset, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(idx === 0 ? 75 : 58, now + offset);
+                osc.frequency.exponentialRampToValueAtTime(28, now + offset + 0.13);
+
+                gain.gain.setValueAtTime(0.22 * intensity, now + offset);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.14);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + offset);
+                osc.stop(now + offset + 0.15);
+            });
+        }
+
+        function playDoorKnocks() {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            [0, 0.42, 0.84].forEach((delay) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "triangle";
+                osc.frequency.setValueAtTime(135, now + delay);
+                osc.frequency.exponentialRampToValueAtTime(42, now + delay + 0.16);
+
+                gain.gain.setValueAtTime(0.45, now + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.18);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.19);
+            });
+        }
+
+        function playGlitchBurst() {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+            const bufferSize = ctx.sampleRate * 0.14;
+            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * 0.35;
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = ctx.createBiquadFilter();
+            filter.type = "bandpass";
+            filter.frequency.value = 1400;
+
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(0.18, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+            noise.start();
+        }
+
+        function playShutterSound() {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(920, now);
+            osc.frequency.exponentialRampToValueAtTime(220, now + 0.06);
+            gain.gain.setValueAtTime(0.16, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.075);
+        }
+
+        function playChatSound(type = "in") {
+            const ctx = ensureAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            if (horrorModeActive && type === "in") {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(310, now);
+                osc.frequency.exponentialRampToValueAtTime(215, now + 0.18);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.21);
+            } else {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(type === "out" ? 560 : 450, now);
+                osc.frequency.exponentialRampToValueAtTime(type === "out" ? 840 : 660, now + 0.065);
+                gain.gain.setValueAtTime(0.07, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+        }
+
+        // =========================================================================
+        // INISIALISASI & SINKRONISASI FOTO
+        // =========================================================================
+        function initStory() {
+            DEFAULT_MEDIA.nayaPapGorden = generateCurtainGatePhoto();
+            MEDIA_CONFIG = { ...DEFAULT_MEDIA };
+            tempMediaBuffer = { ...DEFAULT_MEDIA };
+
+            applyAvatarsToDOM();
+            setupChatTouchAndScroll();
+            setupCurtainHoldMechanics();
+
+            // Render kotak enkripsi, pemisah Babak 1, dan pesan pertama Juna
+            renderStepImmediate();
+            renderStepImmediate();
+            renderStepImmediate();
+        }
+
+        function applyAvatarsToDOM() {
+            waHeaderAvatar.src = MEDIA_CONFIG.junaMedia;
+            document.getElementById("banner-avatar").src = MEDIA_CONFIG.junaMedia;
+            document.getElementById("curtain-bg-preview").src = MEDIA_CONFIG.nayaPapGorden;
+
+            ["tw-avatar", "tw-quote-avatar", "tw-reply-avatar"].forEach(id => {
+                document.getElementById(id).src = MEDIA_CONFIG.nayaPP;
+            });
+        }
+
+        // =========================================================================
+        // PEMISAHAN GESTUR SCROLL VERTIKAL VS TAP LANJUT CERITA (ANDROID FRIENDLY)
+        // =========================================================================
+        function setupChatTouchAndScroll() {
+            let pointerStartX = 0;
+            let pointerStartY = 0;
+            let trackingTap = false;
+
+            chatBody.addEventListener("pointerdown", (e) => {
+                if (e.pointerType === "mouse" && e.button !== 0) return;
+                if (e.target.closest("button, img, input, label")) {
+                    trackingTap = false;
+                    return;
+                }
+                pointerStartX = e.clientX;
+                pointerStartY = e.clientY;
+                trackingTap = true;
+            }, { passive: true });
+
+            chatBody.addEventListener("pointerup", (e) => {
+                if (!trackingTap) return;
+                trackingTap = false;
+
+                const dx = Math.abs(e.clientX - pointerStartX);
+                const dy = Math.abs(e.clientY - pointerStartY);
+
+                // Jarak gerak < 10px baru dianggap tap lanjut cerita
+                if (dx < 10 && dy < 10) {
+                    if (!choicePanel.classList.contains("hidden")) return;
+                    if (tweetOverlay.style.display === "flex") return;
+                    if (document.getElementById("curtain-overlay").style.display === "flex") return;
+                    nextStep();
+                }
+            });
+
+            chatBody.addEventListener("pointercancel", () => {
+                trackingTap = false;
+            });
+
+            // Tampilkan/sembunyikan tombol melayang ↓ saat scroll ke atas
+            chatBody.addEventListener("scroll", () => {
+                const distFromBottom = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight;
+                if (distFromBottom > 80) {
+                    scrollBottomBtn.classList.remove("btn-hidden");
+                    scrollBottomBtn.classList.add("btn-visible");
+                } else {
+                    scrollBottomBtn.classList.remove("btn-visible");
+                    scrollBottomBtn.classList.add("btn-hidden");
+                    unreadScrollDot.classList.add("hidden");
+                }
+            }, { passive: true });
+        }
+
+        function nextStep() {
+            ensureAudioContext();
+            if (isBusy) return;
+            if (!choicePanel.classList.contains("hidden")) return;
+            if (tweetOverlay.style.display === "flex") return;
+            if (document.getElementById("curtain-overlay").style.display === "flex") return;
+
+            const steps = STORY_SCRIPT[currentBranch];
+            if (!steps || stepIndex >= steps.length) return;
+
+            const step = steps[stepIndex];
+
+            if (step.sender === "dia" && step.typingMs) {
+                runTypingSimulation(step, () => {
+                    renderStepImmediate();
+                    queueAutoPlay();
+                });
+            } else {
+                renderStepImmediate();
+                queueAutoPlay();
+            }
+        }
+
+        function runTypingSimulation(step, onComplete) {
+            isBusy = true;
+            const waitTime = isAutoPlay ? step.typingMs : Math.min(step.typingMs, 950);
+
+            waContactSub.textContent = "mengetik...";
+            waContactSub.classList.add("text-emerald-500", "font-medium");
+            typingIndicator.classList.remove("hidden");
+            tapHintText.textContent = contactSaved ? "juna 102 mengetik..." : "mengetik...";
+            scrollToLatest(true);
+
+            // Efek indikator mengetik berkedip kacau di Babak 4
+            if (step.erraticTyping) {
+                setTimeout(() => {
+                    waContactSub.textContent = "online";
+                    typingIndicator.classList.add("hidden");
+                }, waitTime * 0.35);
+
+                setTimeout(() => {
+                    waContactSub.textContent = "mengetik...";
+                    typingIndicator.classList.remove("hidden");
+                }, waitTime * 0.62);
+
+                setTimeout(() => {
+                    waContactSub.textContent = "online";
+                    typingIndicator.classList.add("hidden");
+                }, waitTime * 0.82);
+
+                setTimeout(() => {
+                    waContactSub.textContent = "mengetik...";
+                    typingIndicator.classList.remove("hidden");
+                }, waitTime * 0.9);
+            }
+
+            setTimeout(() => {
+                isBusy = false;
+                typingIndicator.classList.add("hidden");
+                waContactSub.textContent = contactSaved ? "online" : "~juna • online";
+                waContactSub.classList.remove("text-emerald-500", "font-medium");
+                tapHintText.textContent = isAutoPlay ? "Mode Auto aktif..." : "Ketuk layar atau bar ini untuk lanjut...";
+                onComplete();
+            }, waitTime);
+        }
+
+        function renderStepImmediate() {
+            const steps = STORY_SCRIPT[currentBranch];
+            if (!steps || stepIndex >= steps.length) return;
+
+            const step = steps[stepIndex];
+            stepIndex++;
+
+            // 1. Kotak Sistem WA
+            if (step.type === "system") {
+                const el = document.createElement("div");
+                el.className = "self-center my-1.5 max-w-[92%] animate-bubble";
+                el.innerHTML = `
+                    <div class="${horrorModeActive ? 'bg-[#171C24] text-gray-300 border-red-900/40' : 'bg-[#FFF5C4]/95 text-[#54656F] border-amber-200/70'} text-[11px] leading-snug px-3 py-1.5 rounded-lg text-center shadow-2xs border">
+                        ${step.text}
+                    </div>
+                `;
+                chatBody.appendChild(el);
+            }
+
+            // 2. Pemisah Babak / Waktu
+            else if (step.type === "act") {
+                const el = document.createElement("div");
+                el.className = "self-center my-2 animate-bubble";
+                el.innerHTML = `
+                    <div class="act-pill bg-white/90 text-[#54656F] text-[11.5px] font-semibold px-3.5 py-1 rounded-full shadow-2xs border border-black/5">
+                        ${step.text}
+                    </div>
+                `;
+                chatBody.appendChild(el);
+            }
+
+            // 3. Transisi ke Mode Malam Horor (Babak 3)
+            else if (step.type === "horror_shift") {
+                activateHorrorMode(step.actText);
+                setTimeout(() => {
+                    if (!isAutoPlay) nextStep();
+                }, 400);
+            }
+
+            // 4. Simpan Kontak Dinamis (+62... -> juna 102)
+            else if (step.type === "save_contact") {
+                contactSaved = true;
+                waContactName.textContent = step.newName;
+                waContactSub.textContent = step.newSub;
+                showToast(step.toastText);
+                setTimeout(() => {
+                    if (!isAutoPlay) nextStep();
+                }, 450);
+            }
+
+            // 5. Mekanik Tahan Layar untuk Menyibak Gorden (Babak 3)
+            else if (step.type === "curtain_peek") {
+                pauseAutoPlay();
+                openCurtainOverlay();
+                return;
+            }
+
+            // 6. Banner Notifikasi iOS Atas (Babak 4)
+            else if (step.type === "push_banner") {
+                triggerPushBanner();
+                setTimeout(() => {
+                    if (!isAutoPlay) nextStep();
+                }, 850);
+            }
+
+            // 7. Overlay Tweet Private Account (Babak 2)
+            else if (step.type === "tweet") {
+                pauseAutoPlay();
+                openTweetOverlay(step);
+                return;
+            }
+
+            // 8. Pilihan Ending Mencekam (Babak 4)
+            else if (step.type === "choice") {
+                pauseAutoPlay();
+                waFooter.classList.add("hidden");
+                choicePanel.classList.remove("hidden");
+                choiceList.innerHTML = "";
+
+                step.options.forEach(opt => {
+                    const btn = document.createElement("button");
+                    btn.className = "w-full text-left bg-[#161B24] hover:bg-red-950/80 active:scale-[0.99] text-gray-100 text-[13px] font-semibold px-3.5 py-3 rounded-xl border border-red-900/50 hover:border-red-500 transition flex items-center justify-between gap-2 shadow-md";
+                    btn.innerHTML = `
+                        <span>${opt.label}</span>
+                        <span class="text-red-400 font-bold shrink-0">→</span>
+                    `;
+                    btn.onclick = () => chooseBranch(opt.branch);
+                    choiceList.appendChild(btn);
+                });
+            }
+
+            // 9. Penutup Cerita
+            else if (step.type === "end") {
+                pauseAutoPlay();
+                waContactSub.textContent = "terakhir dilihat baru saja";
+                tapHintText.textContent = "Cerita selesai • Klik tombol Ulangi di atas";
+
+                const el = document.createElement("div");
+                el.className = "my-4 p-4 rounded-2xl bg-[#12161E]/95 border border-red-900/60 shadow-2xl text-center animate-bubble";
+                el.innerHTML = `
+                    <span class="inline-block px-2.5 py-0.5 rounded-full bg-red-950 text-red-400 border border-red-800/60 text-[10px] font-extrabold tracking-wider">
+                        ${step.badge}
+                    </span>
+                    <h3 class="text-[17px] font-extrabold text-white mt-2">${step.title}</h3>
+                    <p class="text-[12.5px] text-gray-300 mt-1.5 leading-relaxed">${step.summary}</p>
+                    <button onclick="resetStory()" class="mt-4 w-full py-2.5 px-4 rounded-xl bg-red-700 hover:bg-red-600 text-white text-[12.5px] font-bold shadow-lg transition">
+                        Ulangi Cerita & Coba Pilihan Lain
+                    </button>
+                `;
+                chatBody.appendChild(el);
+            }
+
+            // 10. Bubble Chat (Teks & Foto PAP)
+            else {
+                const isOut = step.sender === "aku";
+                playChatSound(isOut ? "out" : "in");
+
+                if (step.glitch) triggerGlitchEffect();
+                if (step.vibrate && navigator.vibrate) {
+                    navigator.vibrate([120, 60, 220]);
+                }
+                if (step.knockSound) {
+                    playDoorKnocks();
+                }
+
+                const row = document.createElement("div");
+                row.className = `flex w-full ${isOut ? "justify-end" : "justify-start"} animate-bubble`;
+
+                let imageBlock = "";
+                if (step.type === "image") {
+                    const imgSrc = MEDIA_CONFIG[step.mediaKey] || FALLBACK_JUNA_SVG;
+                    const isDarkInspectable = step.inspectHint === true;
+                    const captionTitle = isDarkInspectable
+                        ? "PAP Gorden Naya (Gunakan slider +Brightness)"
+                        : "PAP dari Juna";
+
+                    imageBlock = `
+                        <div class="relative mb-1.5 rounded-xl overflow-hidden bg-gray-900 group">
+                            <img data-media-key="${step.mediaKey}"
+                                 src="${imgSrc}"
+                                 onerror="handleImgError(this, 'juna')"
+                                 onclick="openLightbox(this.src, '${captionTitle}', ${isDarkInspectable})"
+                                 alt="PAP"
+                                 class="w-full max-h-64 object-cover cursor-zoom-in transition duration-200 group-hover:brightness-95">
+                            <span class="absolute bottom-2 right-2 ${isDarkInspectable ? 'bg-amber-400 text-gray-950 font-bold' : 'bg-black/60 text-white'} text-[10px] px-2 py-0.5 rounded-full pointer-events-none">
+                                ${isDarkInspectable ? '🔍 Ketuk & Naikkan Brightness' : 'Ketuk untuk zoom'}
+                            </span>
+                        </div>
+                    `;
+                }
+
+                const doubleCheck = isOut ? `
+                    <svg class="w-3.5 h-3.5 text-ios-waCheck inline-block ml-0.5 -mt-0.5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/>
+                    </svg>
+                ` : "";
+
+                const messageText = step.type === "image" ? step.caption : step.text;
+
+                row.innerHTML = `
+                    <div class="max-w-[80%] px-3 py-1.5 rounded-2xl text-[14.5px] leading-[1.38] ${
+                        isOut ? "bubble-out rounded-br-xs mr-1" : "bubble-in rounded-bl-xs ml-1"
+                    }">
+                        ${imageBlock}
+                        <span class="break-words">${messageText}</span>
+                        <span class="bubble-time float-right ml-2.5 mt-1.5 text-[10.5px] text-ios-waMuted flex items-center select-none">
+                            ${step.time}
+                            ${doubleCheck}
+                        </span>
+                    </div>
+                `;
+
+                chatBody.appendChild(row);
+            }
+
+            scrollToLatest(true);
+        }
+
+        // =========================================================================
+        // AKTIVASI MODE HOROR (DARK THEME + VIGNETTE + AUDIO AMBIENT)
+        // =========================================================================
+        function activateHorrorMode(actText) {
+            horrorModeActive = true;
+            phoneContainer.classList.add("horror-mode");
+
+            const el = document.createElement("div");
+            el.className = "self-center my-2 animate-bubble";
+            el.innerHTML = `
+                <div class="act-pill bg-[#141922]/95 text-red-400 text-[11.5px] font-bold px-3.5 py-1 rounded-full shadow-md border border-red-900/40">
+                    ${actText}
+                </div>
+            `;
+            chatBody.appendChild(el);
+
+            startAmbientDrone();
+            playHeartbeat(0.95);
+            scrollToLatest(true);
+        }
+
+        function triggerGlitchEffect() {
+            phoneContainer.classList.remove("glitch-pulse");
+            void phoneContainer.offsetWidth;
+            phoneContainer.classList.add("glitch-pulse");
+            playGlitchBurst();
+        }
+
+        // =========================================================================
+        // MEKANIK INTERAKTIF: TAHAN LAYAR UNTUK MENYIBAK GORDEN
+        // =========================================================================
+        let curtainHoldInterval = null;
+        let curtainProgress = 0;
+
+        function openCurtainOverlay() {
+            curtainProgress = 0;
+            updateCurtainVisuals(0);
+            document.getElementById("curtain-bg-preview").src = MEDIA_CONFIG.nayaPapGorden;
+            document.getElementById("curtain-overlay").style.display = "flex";
+        }
+
+        function updateCurtainVisuals(pct) {
+            const left = document.getElementById("curtain-left");
+            const right = document.getElementById("curtain-right");
+            const circle = document.getElementById("curtain-progress-circle");
+
+            const shift = pct * 0.72;
+            left.style.transform = `translateX(-${shift}%)`;
+            right.style.transform = `translateX(${shift}%)`;
+
+            const offset = 263.89 - (pct / 100) * 263.89;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function setupCurtainHoldMechanics() {
+            const overlay = document.getElementById("curtain-overlay");
+            let beatTick = 0;
+
+            const startHold = (e) => {
+                e.preventDefault();
+                ensureAudioContext();
+                if (curtainHoldInterval) return;
+
+                playHeartbeat(1.1);
+                curtainHoldInterval = setInterval(() => {
+                    curtainProgress += 3.5;
+                    beatTick++;
+                    if (beatTick % 14 === 0) playHeartbeat(1.35);
+
+                    if (curtainProgress >= 100) {
+                        curtainProgress = 100;
+                        updateCurtainVisuals(100);
+                        completeCurtainPeek();
+                    } else {
+                        updateCurtainVisuals(curtainProgress);
+                    }
+                }, 50);
+            };
+
+            const endHold = () => {
+                if (curtainHoldInterval) {
+                    clearInterval(curtainHoldInterval);
+                    curtainHoldInterval = null;
+                }
+                if (curtainProgress < 100) {
+                    const retract = setInterval(() => {
+                        if (curtainHoldInterval || curtainProgress <= 0) {
+                            clearInterval(retract);
+                            return;
+                        }
+                        curtainProgress = Math.max(0, curtainProgress - 5);
+                        updateCurtainVisuals(curtainProgress);
+                    }, 30);
+                }
+            };
+
+            overlay.addEventListener("pointerdown", startHold);
+            overlay.addEventListener("pointerup", endHold);
+            overlay.addEventListener("pointerleave", endHold);
+            overlay.addEventListener("pointercancel", endHold);
+        }
+
+        function completeCurtainPeek() {
+            clearInterval(curtainHoldInterval);
+            curtainHoldInterval = null;
+
+            playShutterSound();
+            const flash = document.getElementById("shutter-flash");
+            flash.classList.remove("flash-active");
+            void flash.offsetWidth;
+            flash.classList.add("flash-active");
+
+            setTimeout(() => {
+                document.getElementById("curtain-overlay").style.display = "none";
+                renderStepImmediate();
+                queueAutoPlay();
+            }, 260);
+        }
+
+        // =========================================================================
+        // BANNER NOTIFIKASI iOS ATAS (BABAK 4)
+        // =========================================================================
+        let bannerTimeout = null;
+        function triggerPushBanner() {
+            const banner = document.getElementById("ios-push-banner");
+            playGlitchBurst();
+            if (navigator.vibrate) navigator.vibrate([140, 70, 260]);
+
+            banner.classList.remove("banner-hidden");
+            banner.classList.add("banner-visible");
+
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => {
+                dismissPushBanner();
+            }, 7000);
+        }
+
+        function dismissPushBanner() {
+            const banner = document.getElementById("ios-push-banner");
+            banner.classList.remove("banner-visible");
+            banner.classList.add("banner-hidden");
+        }
+
+        // =========================================================================
+        // OVERLAY TWEET PRIVATE ACCOUNT (BABAK 2)
+        // =========================================================================
+        function openTweetOverlay(step) {
+            tweetLiked = false;
+            document.getElementById("tw-like-icon").setAttribute("fill", "none");
+            document.getElementById("tw-like-icon").classList.remove("text-ios-twPink");
+            document.getElementById("tw-like-count").textContent = "";
+
+            document.getElementById("tw-main-text").textContent = step.mainText;
+            document.getElementById("tw-timestamp").textContent = step.timestamp;
+
+            const quoteBox = document.getElementById("tw-quote-box");
+            if (step.quoteTweet) {
+                quoteBox.classList.remove("hidden");
+                document.getElementById("tw-quote-age").textContent = step.quoteTweet.age;
+                document.getElementById("tw-quote-text").textContent = step.quoteTweet.text;
+            } else {
+                quoteBox.classList.add("hidden");
+            }
+
+            const replySection = document.getElementById("tw-reply-section");
+            if (step.reply) {
+                replySection.classList.remove("hidden");
+                document.getElementById("tw-reply-age").textContent = step.reply.age;
+                document.getElementById("tw-reply-text").textContent = step.reply.text;
+            } else {
+                replySection.classList.add("hidden");
+            }
+
+            playChatSound("in");
+            tweetOverlay.style.display = "flex";
+        }
+
+        function closeTweetOverlay() {
+            tweetOverlay.style.display = "none";
+            setTimeout(() => {
+                nextStep();
+            }, 220);
+        }
+
+        function toggleTweetLike() {
+            tweetLiked = !tweetLiked;
+            const icon = document.getElementById("tw-like-icon");
+            const count = document.getElementById("tw-like-count");
+            if (tweetLiked) {
+                icon.setAttribute("fill", "currentColor");
+                icon.classList.add("text-ios-twPink");
+                count.textContent = "1";
+                count.classList.add("text-ios-twPink");
+                playChatSound("out");
+            } else {
+                icon.setAttribute("fill", "none");
+                icon.classList.remove("text-ios-twPink");
+                count.textContent = "";
+                count.classList.remove("text-ios-twPink");
+            }
+        }
+
+        // =========================================================================
+        // LIGHTBOX ZOOM & SLIDER BRIGHTNESS
+        // =========================================================================
+        function openLightbox(src, caption, enableBoost = false) {
+            const img = document.getElementById("lightbox-img");
+            const slider = document.getElementById("brightness-slider");
+            img.src = src;
+            document.getElementById("lightbox-caption").textContent = caption || "Foto Lampiran";
+
+            slider.value = 100;
+            updateLightboxBrightness(100);
+
+            document.getElementById("brightness-controls").style.display = enableBoost ? "flex" : "none";
+            document.getElementById("lightbox-modal").style.display = "flex";
+        }
+
+        function updateLightboxBrightness(val) {
+            const img = document.getElementById("lightbox-img");
+            const label = document.getElementById("brightness-val-label");
+            const contrast = val > 100 ? 100 + Math.round((val - 100) * 0.22) : 100;
+            img.style.filter = `brightness(${val}%) contrast(${contrast}%)`;
+            label.textContent = `${val}%`;
+        }
+
+        function boostNightVision() {
+            const slider = document.getElementById("brightness-slider");
+            slider.value = 275;
+            updateLightboxBrightness(275);
+            playHeartbeat(1.2);
+        }
+
+        function closeLightbox() {
+            document.getElementById("lightbox-modal").style.display = "none";
+        }
+
+        // =========================================================================
+        // MODAL GANTI FOTO K-POP
+        // =========================================================================
+        function openPhotoModal() {
+            tempMediaBuffer = { ...MEDIA_CONFIG };
+            ["junaMedia", "nayaPP"].forEach(key => {
+                document.getElementById(`prev-${key}`).src = tempMediaBuffer[key];
+                const urlInput = document.getElementById(`url-${key}`);
+                urlInput.value = tempMediaBuffer[key].startsWith("data:") ? "" : tempMediaBuffer[key];
+            });
+            document.getElementById("photo-modal").style.display = "flex";
+        }
+
+        function closePhotoModal() {
+            document.getElementById("photo-modal").style.display = "none";
+        }
+
+        function handleFileUpload(event, key) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempMediaBuffer[key] = e.target.result;
+                document.getElementById(`prev-${key}`).src = e.target.result;
+                document.getElementById(`url-${key}`).value = "";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleUrlPreview(url, key) {
+            const cleanUrl = url.trim();
+            if (!cleanUrl) return;
+            tempMediaBuffer[key] = cleanUrl;
+            document.getElementById(`prev-${key}`).src = cleanUrl;
+        }
+
+        function resetPhotosToDefault() {
+            tempMediaBuffer = { ...DEFAULT_MEDIA };
+            ["junaMedia", "nayaPP"].forEach(key => {
+                document.getElementById(`prev-${key}`).src = tempMediaBuffer[key];
+                document.getElementById(`url-${key}`).value = tempMediaBuffer[key].startsWith("data:") ? "" : tempMediaBuffer[key];
+            });
+        }
+
+        function applyPhotoChanges() {
+            MEDIA_CONFIG = { ...tempMediaBuffer };
+            applyAvatarsToDOM();
+
+            document.querySelectorAll("img[data-media-key]").forEach(img => {
+                const k = img.getAttribute("data-media-key");
+                if (MEDIA_CONFIG[k]) img.src = MEDIA_CONFIG[k];
+            });
+
+            closePhotoModal();
+            showToast("PP & PAP Juna berhasil disinkronkan!");
+        }
+
+        // =========================================================================
+        // PERCABANGAN, AUTO-PLAY, SUARA & RESET
+        // =========================================================================
+        function chooseBranch(branchKey) {
+            choicePanel.classList.add("hidden");
+            waFooter.classList.remove("hidden");
+            currentBranch = branchKey;
+            stepIndex = 0;
+            nextStep();
+        }
+
+        function toggleAutoPlay() {
+            ensureAudioContext();
+            if (isAutoPlay) {
+                pauseAutoPlay();
+            } else {
+                isAutoPlay = true;
+                document.getElementById("auto-dot").classList.replace("bg-gray-400", "bg-emerald-500");
+                document.getElementById("auto-label").textContent = "On";
+                tapHintText.textContent = "Mode Auto aktif...";
+                nextStep();
+            }
+        }
+
+        function pauseAutoPlay() {
+            isAutoPlay = false;
+            clearTimeout(autoTimer);
+            document.getElementById("auto-dot").classList.replace("bg-emerald-500", "bg-gray-400");
+            document.getElementById("auto-label").textContent = "Auto";
+            tapHintText.textContent = "Ketuk layar atau bar ini untuk lanjut...";
+        }
+
+        function queueAutoPlay() {
+            if (!isAutoPlay) return;
+            clearTimeout(autoTimer);
+            autoTimer = setTimeout(() => {
+                if (isAutoPlay) nextStep();
+            }, 1350);
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById("icon-sound-on").classList.toggle("hidden", !soundEnabled);
+            document.getElementById("icon-sound-off").classList.toggle("hidden", soundEnabled);
+            if (!soundEnabled) {
+                stopAmbientDrone();
+            } else {
+                ensureAudioContext();
+                if (horrorModeActive) startAmbientDrone();
+                playChatSound("out");
+            }
+        }
+
+        function resetStory() {
+            pauseAutoPlay();
+            stopAmbientDrone();
+            dismissPushBanner();
+
+            isBusy = false;
+            contactSaved = false;
+            horrorModeActive = false;
+            currentBranch = "main";
+            stepIndex = 0;
+
+            phoneContainer.classList.remove("horror-mode");
+            waContactName.textContent = "+62 812-9402-7718";
+            waContactSub.textContent = "~juna • online";
+            waContactSub.classList.remove("text-emerald-500", "font-medium");
+
+            chatBody.innerHTML = "";
+            typingIndicator.classList.add("hidden");
+            choicePanel.classList.add("hidden");
+            waFooter.classList.remove("hidden");
+            scrollBottomBtn.classList.remove("btn-visible");
+            scrollBottomBtn.classList.add("btn-hidden");
+            document.getElementById("curtain-overlay").style.display = "none";
+            tweetOverlay.style.display = "none";
+            tapHintText.textContent = "Ketuk layar atau bar ini untuk lanjut...";
+
+            renderStepImmediate();
+            renderStepImmediate();
+            renderStepImmediate();
+            showToast("Cerita diulang dari Babak 1");
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const toast = document.getElementById("wa-toast");
+            toast.textContent = msg;
+            toast.classList.remove("hidden");
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 2400);
+        }
+
+        function scrollToLatest(forceBottom = false) {
+            requestAnimationFrame(() => {
+                if (forceBottom) {
+                    chatBody.scrollTo({
+                        top: chatBody.scrollHeight,
+                        behavior: "smooth"
+                    });
+                    scrollBottomBtn.classList.remove("btn-visible");
+                    scrollBottomBtn.classList.add("btn-hidden");
+                    unreadScrollDot.classList.add("hidden");
+                }
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", initStory);
+    </script>
+</body>
+</html>
